@@ -1,38 +1,38 @@
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 
 int main() {
     pid_t pid;
+    pid = fork();  // Create a new child process
 
-    pid = fork();  // Create child process
-    
     if (pid < 0) {
-        perror("Fork Failed");
-        exit(EXIT_FAILURE);
-    }
+        // If fork() fails
+        perror("Fork failed");
+        exit(1);
+    } 
     else if (pid == 0) {
-        printf("Child Process: My PID is %d\n", getpid());
-        printf("Child Process: Executing 'ls' command...\n");
-        
-        // Execute the 'ls' command in the child process
-        execlp("ls", "ls", (char*)NULL);
-        
-        // This line is reached only if execlp fails
-        perror("execlp failed");
-        exit(EXIT_FAILURE);
-    }
-    else {
-        printf("Parent Process: My PID is %d\n", getpid());
-        printf("Parent Process: Waiting for the child to finish...\n");
-        
-        // Wait for the child process to terminate
-        wait(NULL);
-        
-        printf("Parent Process: Child has finished\n");
-    }
+        // Child process
+        printf("Child process: PID = %d, Parent PID = %d\n", getpid(), getppid());
 
+        // Replace child process with a new program using exec()
+        // Here, we use `execlp` to run the "ls" command as an example.
+        // Replace "ls" with any program you wish to run in the child process.
+        if (execlp("ls", "ls", NULL) == -1) {
+            perror("Exec failed");
+            exit(1);
+        }
+    } 
+    else {
+        // Parent process
+        printf("Parent process: PID = %d\n", getpid());
+
+        // Wait for child to complete
+        wait(NULL);  // wait() blocks until the child process terminates
+        printf("Child process terminated. Control is back to the parent process.\n");
+    }
+    
     return 0;
 }
